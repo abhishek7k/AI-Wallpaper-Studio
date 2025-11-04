@@ -1,0 +1,5 @@
+{
+  "name": "AI Wallpaper Studio",
+  "description": "An AI-powered application to generate, edit, and analyze beautiful wallpapers for your device using Gemini. Create stunning visuals from text prompts, apply edits with simple commands, and gain insights into your own photos.",
+  "requestFramePermissions": []
+}
