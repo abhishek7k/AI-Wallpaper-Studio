@@ -1,11 +1,42 @@
 import { GoogleGenAI, GenerateContentResponse, Modality } from '@google/genai';
 import { PredefinedAspectRatio } from '../types';
 
-const handleApiError = (error: unknown): string => {
+const handleApiError = (error: any): string => {
   console.error("Gemini API Error:", error);
-  if (error instanceof Error) {
+
+  let apiErrorDetails: { code?: number; message?: string; status?: string } | null = null;
+
+  // Try to find the structured error details from common API error patterns
+  if (error?.error && typeof error.error === 'object') {
+    // Case 1: The error object is the response, e.g., { error: { ... } }
+    apiErrorDetails = error.error;
+  } else if (typeof error?.message === 'string' && error.message.startsWith('{')) {
+    // Case 2: The error is an Error instance with a JSON string in its message
+    try {
+      const parsed = JSON.parse(error.message);
+      // The parsed JSON could be { error: { ... } } or just { code: ..., message: ... }
+      apiErrorDetails = parsed.error || parsed;
+    } catch (e) {
+      // Fallback to using the raw message if JSON parsing fails
+      return `An error occurred: ${error.message}`;
+    }
+  }
+
+  // If we found structured details, format a specific message
+  if (apiErrorDetails && typeof apiErrorDetails === 'object') {
+    if (apiErrorDetails.status === 'RESOURCE_EXHAUSTED' || apiErrorDetails.code === 429) {
+      return "You've exceeded your request limit. Please wait a moment and try again, or check your API plan and billing details at ai.google.dev.";
+    }
+    if (apiErrorDetails.message) {
+      return `An API error occurred: ${apiErrorDetails.message}`;
+    }
+  }
+
+  // Fallback for standard Error objects or unknown structures
+  if (error?.message) {
     return `An error occurred: ${error.message}`;
   }
+
   return 'An unknown error occurred while contacting the Gemini API.';
 };
 
@@ -125,22 +156,6 @@ export const upscaleImage = async (ai: GoogleGenAI, imageBase64: string, mimeTyp
       }
     }
     throw new Error('Could not upscale the image. The model might have returned an empty response.');
-  } catch (error) {
-    throw new Error(handleApiError(error));
-  }
-};
-
-
-export const getPromptSuggestion = async (ai: GoogleGenAI): Promise<string> => {
-  try {
-    const response = await ai.models.generateContent({
-      // FIX: Use correct model name for gemini flash lite.
-      model: 'gemini-flash-lite-latest',
-      contents: 'Generate a short, creative, and visually descriptive wallpaper prompt. Be concise and inspiring. For example: "A lone astronaut contemplating a swirling nebula".',
-    });
-
-    // Clean up the response, removing quotes and extra text.
-    return response.text.replace(/"/g, '').trim();
   } catch (error) {
     throw new Error(handleApiError(error));
   }

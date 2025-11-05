@@ -6,7 +6,7 @@ import { ImageDisplay } from './components/ImageDisplay';
 import { PromptInput } from './components/PromptInput';
 import { AspectRatioSelector } from './components/AspectRatioSelector';
 import { View, AspectRatio, PredefinedAspectRatio, UPLOADED_IMAGE_MIMETYPE, Filter, EditSettings } from './types';
-import { generateImage, editImage, analyzeImage, getPromptSuggestion, upscaleImage, reimagineImageRegion } from './services/geminiService';
+import { generateImage, editImage, analyzeImage, upscaleImage, reimagineImageRegion } from './services/geminiService';
 import { fileToBase64 } from './utils/fileUtils';
 import { useScreenAspectRatio } from './hooks/useScreenAspectRatio';
 import { FilterSelector } from './components/FilterSelector';
@@ -46,6 +46,24 @@ const findClosestAspectRatio = (width: number, height: number): PredefinedAspect
     return closest.key;
 };
 
+const promptSuggestions = [
+  "A lone astronaut contemplating a swirling nebula, cinematic, detailed",
+  "A mystical forest with glowing mushrooms and ancient trees, fantasy art",
+  "Cyberpunk city street at night, neon lights reflecting on wet pavement, Blade Runner style",
+  "A majestic dragon flying over a volcanic mountain range at sunset, epic, high detail",
+  "An underwater city with bioluminescent creatures and futuristic glass dome buildings",
+  "A tranquil Japanese Zen garden with a koi pond and cherry blossoms in full bloom",
+  "Steampunk-inspired airship soaring through a sky filled with clockwork planets",
+  "A surreal desert landscape with melting clocks and giant chess pieces, Salvador Dali style",
+  "An enchanted library with floating books and spiraling staircases made of pure light",
+  "A close-up of a futuristic robot's eye, reflecting a bustling city skyline, photorealistic",
+  "A vast field of sunflowers under a dramatic, stormy sky with a single ray of light",
+  "A whimsical, intricate treehouse built into a giant, ancient bioluminescent oak",
+  "A glowing portal to another dimension opening up in a quiet city park at dusk",
+  "Minimalist abstract art with overlapping geometric shapes and a pastel color palette",
+  "A photorealistic portrait of a noble wolf with piercing blue eyes, set against a snowy backdrop",
+];
+
 interface HistoryState {
   base64: string;
   mimeType: string;
@@ -68,6 +86,7 @@ export default function App() {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState('');
+  const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
   
   const screenAspectRatio = useScreenAspectRatio();
   const [selectedAspectRatio, setSelectedAspectRatio] = useState<AspectRatio>(screenAspectRatio);
@@ -133,6 +152,9 @@ export default function App() {
     setLoadingMessage(message);
     setError(null);
     setAnalysisResult('');
+     if (message !== 'Analyzing your image...') {
+      setImageAspectRatio(null);
+    }
   };
 
   const commonApiEnd = () => {
@@ -234,30 +256,15 @@ export default function App() {
     }
   };
 
-  const handleSuggestion = async () => {
-    if (!ai) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const suggestedPrompt = await getPromptSuggestion(ai);
-      setPrompt(suggestedPrompt);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSuggestion = () => {
+    const suggestedPrompt = promptSuggestions[Math.floor(Math.random() * promptSuggestions.length)];
+    setPrompt(suggestedPrompt);
   };
 
-  const handleRandom = async () => {
-    await handleSuggestion();
-    // Use a timeout to ensure prompt state is updated before submitting
-    setTimeout(() => {
-      // Access the latest prompt via the state updater function form
-      setPrompt(currentPrompt => {
-        handleGenerate(currentPrompt);
-        return currentPrompt;
-      });
-    }, 100);
+  const handleRandom = () => {
+    const suggestedPrompt = promptSuggestions[Math.floor(Math.random() * promptSuggestions.length)];
+    setPrompt(suggestedPrompt);
+    handleGenerate(suggestedPrompt);
   };
   
   const handleDownload = () => {
@@ -273,6 +280,7 @@ export default function App() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setImageAspectRatio(null);
       commonApiStart('Uploading image...');
       try {
         const { base64, mimeType } = await fileToBase64(file);
@@ -457,11 +465,17 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen overflow-hidden font-sans text-white bg-gray-900 flex flex-col px-4">
-      <div className="py-4 flex justify-center shrink-0">
-        <Header />
-      </div>
+      <header className="py-4 flex justify-center shrink-0">
+        <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl">
+          <Header />
+        </div>
+      </header>
 
-      <main ref={imageDisplayRef} className="flex-1 w-full max-w-3xl mx-auto overflow-hidden bg-black flex items-center justify-center relative rounded-2xl">
+      <main 
+        ref={imageDisplayRef}
+        className="flex-1 w-full max-w-3xl mx-auto min-h-0 flex flex-col justify-center relative transition-all duration-300 ease-in-out"
+        style={{ aspectRatio: imageAspectRatio ? String(imageAspectRatio) : undefined }}
+      >
         <ImageDisplay 
           imageSrc={imageSrc} 
           isLoading={isLoading}
@@ -472,6 +486,7 @@ export default function App() {
           editSettings={editSettings}
           isCropping={isCropping}
           onCrop={handleApplyCrop}
+          onImageLoad={setImageAspectRatio}
         />
         {isMasking && imageSrc && (
           <MaskingOverlay 
@@ -491,8 +506,9 @@ export default function App() {
             </button>
         )}
         
-        {view === View.EDIT && imageSrc && !isCropping && !isMasking && (
+        {imageSrc && !isCropping && !isMasking && (
             <TopRightControls
+            view={view}
             onUndo={handleUndo}
             onRedo={handleRedo}
             onDownload={handleDownload}
@@ -503,16 +519,16 @@ export default function App() {
         )}
       </main>
 
-      <footer className="py-4 bg-gray-900 shrink-0">
-        <div className="flex flex-col items-center gap-4">
+      <footer className="py-2 bg-gray-900 shrink-0">
+        <div className="flex flex-col items-center gap-2">
             {error && (
-                <div className="w-full max-w-3xl p-3 bg-red-500/20 border border-red-500/50 text-red-300 text-sm rounded-lg text-center animate-fade-in">
+                <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl p-3 bg-red-500/20 border border-red-500/50 text-red-300 text-sm rounded-lg text-center animate-fade-in">
                   {error}
                 </div>
             )}
             
             {view === View.EDIT && imageSrc && !isCropping && !isMasking && (
-                <div className="w-full max-w-3xl flex flex-col gap-4">
+                <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl flex flex-col gap-2">
                   <FilterSelector onApplyFilter={handleApplyFilter} isLoading={isLoading} />
                   <ColorAdjustments settings={editSettings} onChange={handleSettingsChange} onApply={handleApplyEdits} onReset={handleResetColors} />
                   <TransformControls 
@@ -527,7 +543,7 @@ export default function App() {
             )}
             
             {view === View.GENERATE && (
-              <div className="w-full max-w-lg">
+              <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl">
                 <AspectRatioSelector 
                     selected={selectedAspectRatio} 
                     onSelect={setSelectedAspectRatio} 
@@ -539,7 +555,7 @@ export default function App() {
               </div>
             )}
 
-            <div className="w-full max-w-3xl">
+            <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl">
               <PromptInput
                   prompt={prompt}
                   setPrompt={setPrompt}
@@ -560,7 +576,9 @@ export default function App() {
               </PromptInput>
             </div>
             
-            <BottomNavBar currentView={view} setView={setView} />
+            <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl">
+                <BottomNavBar currentView={view} setView={setView} />
+            </div>
         </div>
       </footer>
       

@@ -35,7 +35,7 @@ const NavItem: React.FC<{
 
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setView }) => {
   return (
-    <nav className="w-full max-w-sm h-16 bg-black/20 backdrop-blur-lg border border-white/10 rounded-full flex justify-around">
+    <nav className="w-full h-16 bg-black/20 backdrop-blur-lg border border-white/10 rounded-full flex justify-around">
       <NavItem label="Generate" view={View.GENERATE} currentView={currentView} setView={setView}>
         <GenerateIcon />
       </NavItem>
