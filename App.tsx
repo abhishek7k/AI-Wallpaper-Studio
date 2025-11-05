@@ -456,8 +456,12 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden font-sans text-white bg-gray-900 relative">
-      <main ref={imageDisplayRef} className="w-full h-full overflow-hidden bg-black flex items-center justify-center">
+    <div className="h-screen w-screen overflow-hidden font-sans text-white bg-gray-900 flex flex-col px-4">
+      <div className="py-4 flex justify-center shrink-0">
+        <Header />
+      </div>
+
+      <main ref={imageDisplayRef} className="flex-1 w-full max-w-3xl mx-auto overflow-hidden bg-black flex items-center justify-center relative rounded-2xl">
         <ImageDisplay 
           imageSrc={imageSrc} 
           isLoading={isLoading}
@@ -476,48 +480,30 @@ export default function App() {
             onCancel={() => setIsMasking(false)}
           />
         )}
+        
+        {imageSrc && !isCropping && !isMasking && (
+            <button
+            onClick={handleToggleFullscreen}
+            className="absolute top-4 left-4 z-40 p-2 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
+            aria-label="Toggle Fullscreen"
+            >
+            <ExpandIcon />
+            </button>
+        )}
+        
+        {view === View.EDIT && imageSrc && !isCropping && !isMasking && (
+            <TopRightControls
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onDownload={handleDownload}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            isLoading={isLoading}
+            />
+        )}
       </main>
 
-      {imageSrc && !isCropping && !isMasking && (
-        <button
-          onClick={handleToggleFullscreen}
-          className="absolute top-4 left-4 z-40 p-2 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
-          aria-label="Toggle Fullscreen"
-        >
-          <ExpandIcon />
-        </button>
-      )}
-      
-      {view === View.EDIT && imageSrc && !isCropping && !isMasking && (
-        <TopRightControls
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          onDownload={handleDownload}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          isLoading={isLoading}
-        />
-      )}
-
-      <div className="absolute top-0 left-0 right-0 z-30 p-4 flex flex-col items-center gap-3 pointer-events-none">
-        <div className="pointer-events-auto">
-          <Header />
-        </div>
-        {view === View.GENERATE && (
-          <div className="pointer-events-auto w-full max-w-lg">
-             <AspectRatioSelector 
-                selected={selectedAspectRatio} 
-                onSelect={setSelectedAspectRatio} 
-                customWidth={customWidth}
-                customHeight={customHeight}
-                setCustomWidth={setCustomWidth}
-                setCustomHeight={setCustomHeight}
-            />
-          </div>
-        )}
-      </div>
-
-      <footer className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent">
+      <footer className="py-4 bg-gray-900 shrink-0">
         <div className="flex flex-col items-center gap-4">
             {error && (
                 <div className="w-full max-w-3xl p-3 bg-red-500/20 border border-red-500/50 text-red-300 text-sm rounded-lg text-center animate-fade-in">
@@ -540,6 +526,19 @@ export default function App() {
                 </div>
             )}
             
+            {view === View.GENERATE && (
+              <div className="w-full max-w-lg">
+                <AspectRatioSelector 
+                    selected={selectedAspectRatio} 
+                    onSelect={setSelectedAspectRatio} 
+                    customWidth={customWidth}
+                    customHeight={customHeight}
+                    setCustomWidth={setCustomWidth}
+                    setCustomHeight={setCustomHeight}
+                />
+              </div>
+            )}
+
             <div className="w-full max-w-3xl">
               <PromptInput
                   prompt={prompt}

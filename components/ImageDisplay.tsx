@@ -94,14 +94,14 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
   };
   
   return (
-    <div className="w-full h-full flex justify-center items-center relative p-4">
+    <div className="w-full h-full flex justify-center items-center relative">
         {imageSrc && (
           isCropping && onCrop ? 
           <CropOverlay imageSrc={imageSrc} onCrop={onCrop} /> :
           <img 
             src={imageSrc} 
             alt="User Wallpaper" 
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             style={getImageStyle()}
           />
         )}
