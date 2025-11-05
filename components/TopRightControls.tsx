@@ -2,12 +2,14 @@ import React from 'react';
 import { UndoIcon } from './icons/UndoIcon';
 import { RedoIcon } from './icons/RedoIcon';
 import { DownloadIcon } from './icons/DownloadIcon';
+import { ExpandIcon } from './icons/ExpandIcon';
 import { View } from '../types';
 
 interface TopRightControlsProps {
   onUndo: () => void;
   onRedo: () => void;
   onDownload: () => void;
+  onToggleFullscreen: () => void;
   canUndo: boolean;
   canRedo: boolean;
   isLoading: boolean;
@@ -18,13 +20,14 @@ export const TopRightControls: React.FC<TopRightControlsProps> = ({
   onUndo,
   onRedo,
   onDownload,
+  onToggleFullscreen,
   canUndo,
   canRedo,
   isLoading,
   view,
 }) => {
   return (
-    <div className="absolute top-20 right-4 z-40 flex items-center gap-2">
+    <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
       {view === View.EDIT && (
         <>
           <button
@@ -52,6 +55,14 @@ export const TopRightControls: React.FC<TopRightControlsProps> = ({
         aria-label="Download"
       >
         <DownloadIcon />
+      </button>
+      <button
+        onClick={onToggleFullscreen}
+        disabled={isLoading}
+        className="p-2 bg-black/30 backdrop-blur-md rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black/50 transition-colors"
+        aria-label="Toggle Fullscreen"
+      >
+        <ExpandIcon />
       </button>
     </div>
   );

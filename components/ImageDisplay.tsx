@@ -61,29 +61,17 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
     }
 
     if (!imageSrc) {
-        const showUpload = (view === View.EDIT || view === View.ANALYZE) && onUploadClick;
         return (
             <div className="w-full h-full p-4 flex flex-col justify-center items-center">
                 <div className="w-full h-full flex flex-col justify-center items-center text-center text-gray-500 border-2 border-dashed border-gray-700 rounded-2xl p-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p className="font-semibold max-w-xs">
-                      {view === View.GENERATE && "Your wallpaper will appear here."}
+                  <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-4">
+                    AI Wallpaper Studio
+                  </h1>
+                  <p className="font-semibold max-w-xs text-base">
+                      {view === View.GENERATE && "Generate an image to get started."}
                       {view === View.EDIT && "Generate or upload an image to edit."}
                       {view === View.ANALYZE && "Upload an image to analyze."}
                   </p>
-                  {showUpload && (
-                    <button 
-                        onClick={onUploadClick} 
-                        className="mt-4 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold text-sm rounded-full hover:bg-indigo-500 transition-colors"
-                    >
-                        <span className="w-5 h-5 mr-2">
-                            <UploadIcon />
-                        </span>
-                        Upload Image
-                    </button>
-                  )}
                 </div>
             </div>
         );

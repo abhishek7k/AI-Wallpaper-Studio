@@ -17,7 +17,7 @@ import { SparklesIcon } from './components/icons/SparklesIcon';
 import { RandomIcon } from './components/icons/RandomIcon';
 import { TopRightControls } from './components/TopRightControls';
 import { MaskingOverlay } from './components/MaskingOverlay';
-import { ExpandIcon } from './components/icons/ExpandIcon';
+import { UploadIcon } from './components/icons/UploadIcon';
 
 
 const findClosestAspectRatio = (width: number, height: number): PredefinedAspectRatio => {
@@ -470,10 +470,6 @@ export default function App() {
         className="flex-1 w-full max-w-3xl mx-auto min-h-0 flex flex-col justify-center relative transition-all duration-300 ease-in-out"
         style={{ aspectRatio: imageAspectRatio ? String(imageAspectRatio) : undefined }}
       >
-        <header className="absolute top-4 left-4 right-4 z-50 flex justify-center">
-          <Header />
-        </header>
-
         <ImageDisplay 
           imageSrc={imageSrc} 
           isLoading={isLoading}
@@ -495,21 +491,12 @@ export default function App() {
         )}
         
         {imageSrc && !isCropping && !isMasking && (
-            <button
-            onClick={handleToggleFullscreen}
-            className="absolute top-20 left-4 z-40 p-2 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
-            aria-label="Toggle Fullscreen"
-            >
-            <ExpandIcon />
-            </button>
-        )}
-        
-        {imageSrc && !isCropping && !isMasking && (
             <TopRightControls
             view={view}
             onUndo={handleUndo}
             onRedo={handleRedo}
             onDownload={handleDownload}
+            onToggleFullscreen={handleToggleFullscreen}
             canUndo={canUndo}
             canRedo={canRedo}
             isLoading={isLoading}
@@ -570,6 +557,17 @@ export default function App() {
                             <RandomIcon />
                         </button>
                     </>
+                  )}
+                  {(view === View.EDIT || view === View.ANALYZE) && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isLoading}
+                      className="p-2 mr-2 text-gray-400 hover:text-indigo-400 disabled:opacity-50"
+                      aria-label="Upload Image"
+                    >
+                      <UploadIcon />
+                    </button>
                   )}
               </PromptInput>
             </div>
