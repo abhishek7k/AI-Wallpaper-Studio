@@ -464,18 +464,16 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden font-sans text-white bg-gray-900 flex flex-col px-4">
-      <header className="py-4 flex justify-center shrink-0">
-        <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl">
-          <Header />
-        </div>
-      </header>
-
+    <div className="relative h-screen w-screen overflow-hidden font-sans text-white bg-gray-900 flex flex-col p-4">
       <main 
         ref={imageDisplayRef}
         className="flex-1 w-full max-w-3xl mx-auto min-h-0 flex flex-col justify-center relative transition-all duration-300 ease-in-out"
         style={{ aspectRatio: imageAspectRatio ? String(imageAspectRatio) : undefined }}
       >
+        <header className="absolute top-4 left-4 right-4 z-50 flex justify-center">
+          <Header />
+        </header>
+
         <ImageDisplay 
           imageSrc={imageSrc} 
           isLoading={isLoading}
@@ -499,7 +497,7 @@ export default function App() {
         {imageSrc && !isCropping && !isMasking && (
             <button
             onClick={handleToggleFullscreen}
-            className="absolute top-4 left-4 z-40 p-2 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
+            className="absolute top-20 left-4 z-40 p-2 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-colors"
             aria-label="Toggle Fullscreen"
             >
             <ExpandIcon />

@@ -24,7 +24,7 @@ export const TopRightControls: React.FC<TopRightControlsProps> = ({
   view,
 }) => {
   return (
-    <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
+    <div className="absolute top-20 right-4 z-40 flex items-center gap-2">
       {view === View.EDIT && (
         <>
           <button
